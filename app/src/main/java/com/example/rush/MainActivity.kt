@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -24,6 +25,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.rush.ui.screens.HistoryScreen
 import com.example.rush.ui.screens.RunningScreen
+import com.example.rush.ui.screens.StatisticsScreen
 import com.example.rush.ui.theme.RushTheme
 import com.example.rush.viewmodel.RunningViewModel
 import com.example.rush.viewmodel.RunningViewModelFactory
@@ -90,6 +92,11 @@ fun RushApp() {
             name = "History",
             route = "history",
             icon = Icons.Default.History
+        ),
+        BottomNavItem(
+            name = "Stats",
+            route = "statistics",
+            icon = Icons.Default.Analytics
         )
     )
     
@@ -135,6 +142,9 @@ fun RushApp() {
             }
             composable("history") {
                 HistoryScreen(viewModel = viewModel)
+            }
+            composable("statistics") {
+                StatisticsScreen(viewModel = viewModel)
             }
         }
     }

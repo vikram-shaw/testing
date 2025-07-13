@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rush.data.RunningSession
 import com.example.rush.data.RunningStats
+import com.example.rush.repository.RunningRepository
 import com.example.rush.service.LocationService
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Job
@@ -14,12 +15,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
 import java.util.UUID
 
 class RunningViewModel(context: Context) : ViewModel() {
     
     private val locationService = LocationService(context)
+    private val repository = RunningRepository(context)
     
     private val _runningStats = MutableStateFlow(RunningStats())
     val runningStats: StateFlow<RunningStats> = _runningStats.asStateFlow()
@@ -27,8 +31,13 @@ class RunningViewModel(context: Context) : ViewModel() {
     private val _currentSession = MutableStateFlow(RunningSession())
     val currentSession: StateFlow<RunningSession> = _currentSession.asStateFlow()
     
-    private val _sessions = MutableStateFlow<List<RunningSession>>(emptyList())
-    val sessions: StateFlow<List<RunningSession>> = _sessions.asStateFlow()
+    // Use repository for sessions
+    val sessions: StateFlow<List<RunningSession>> = repository.getAllSessions()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
     
     private var locationJob: Job? = null
     private var timerJob: Job? = null
@@ -95,7 +104,15 @@ class RunningViewModel(context: Context) : ViewModel() {
             route = routePoints.toList()
         )
         
-        _sessions.value = _sessions.value + completedSession
+        // Save to database
+        viewModelScope.launch {
+            try {
+                repository.insertSession(completedSession)
+                Log.d("RunningViewModel", "✅ Session saved to database: ${completedSession.id}")
+            } catch (e: Exception) {
+                Log.e("RunningViewModel", "❌ Failed to save session: ${e.message}", e)
+            }
+        }
         
         _runningStats.value = RunningStats()
         _currentSession.value = RunningSession()
@@ -162,6 +179,68 @@ class RunningViewModel(context: Context) : ViewModel() {
             currentLocation = currentLocation,
             currentRoute = routePoints.toList()
         )
+    }
+    
+    // Repository functions for UI access
+    fun getRecentSessions(limit: Int = 10): StateFlow<List<RunningSession>> {
+        return repository.getRecentSessions(limit)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+    }
+    
+    fun getThisWeekSessions(): StateFlow<List<RunningSession>> {
+        return repository.getThisWeekSessions()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+    }
+    
+    fun getThisMonthSessions(): StateFlow<List<RunningSession>> {
+        return repository.getThisMonthSessions()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+    }
+    
+    val statistics = repository.getStatistics()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+    
+    suspend fun deleteSession(sessionId: String) {
+        try {
+            repository.deleteSession(sessionId)
+            Log.d("RunningViewModel", "✅ Session deleted: $sessionId")
+        } catch (e: Exception) {
+            Log.e("RunningViewModel", "❌ Failed to delete session: ${e.message}", e)
+        }
+    }
+    
+    suspend fun clearAllData() {
+        try {
+            repository.deleteAllSessions()
+            Log.d("RunningViewModel", "✅ All data cleared")
+        } catch (e: Exception) {
+            Log.e("RunningViewModel", "❌ Failed to clear data: ${e.message}", e)
+        }
+    }
+    
+    suspend fun cleanOldSessions(daysToKeep: Int = 365) {
+        try {
+            repository.deleteOldSessions(daysToKeep)
+            Log.d("RunningViewModel", "✅ Old sessions cleaned up")
+        } catch (e: Exception) {
+            Log.e("RunningViewModel", "❌ Failed to clean old sessions: ${e.message}", e)
+        }
     }
     
     override fun onCleared() {
