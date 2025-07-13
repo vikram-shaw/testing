@@ -1,6 +1,7 @@
 package com.example.rush.data
 
 import android.location.Location
+import com.google.android.gms.maps.model.LatLng
 
 data class RunningSession(
     val id: String = "",
@@ -11,7 +12,8 @@ data class RunningSession(
     val avgPace: Float = 0f, // in minutes per kilometer
     val maxSpeed: Float = 0f, // in m/s
     val calories: Int = 0,
-    val locations: List<Location> = emptyList()
+    val locations: List<Location> = emptyList(),
+    val route: List<LatLng> = emptyList()
 ) {
     val isActive: Boolean get() = endTime == 0L && startTime > 0
     val averageSpeed: Float get() = if (duration > 0) distance / (duration / 1000f) else 0f
@@ -25,5 +27,7 @@ data class RunningStats(
     val currentPace: Float = 0f,
     val currentSpeed: Float = 0f,
     val isRunning: Boolean = false,
-    val isPaused: Boolean = false
+    val isPaused: Boolean = false,
+    val currentLocation: LatLng? = null,
+    val currentRoute: List<LatLng> = emptyList()
 )

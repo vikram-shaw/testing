@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.rush.data.RunningSession
 import com.example.rush.data.RunningStats
 import com.example.rush.service.LocationService
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,11 +35,13 @@ class RunningViewModel(context: Context) : ViewModel() {
     private var pausedTime: Long = 0
     private var totalPausedDuration: Long = 0
     private val locations = mutableListOf<Location>()
+    private val routePoints = mutableListOf<LatLng>()
     
     fun startRun() {
         startTime = System.currentTimeMillis()
         totalPausedDuration = 0
         locations.clear()
+        routePoints.clear()
         
         _runningStats.value = _runningStats.value.copy(
             isRunning = true,
@@ -87,7 +90,8 @@ class RunningViewModel(context: Context) : ViewModel() {
             avgPace = avgPace,
             maxSpeed = maxSpeed,
             calories = calories,
-            locations = locations.toList()
+            locations = locations.toList(),
+            route = routePoints.toList()
         )
         
         _sessions.value = _sessions.value + completedSession
@@ -99,12 +103,15 @@ class RunningViewModel(context: Context) : ViewModel() {
         stopTimer()
         
         locations.clear()
+        routePoints.clear()
     }
     
     private fun startLocationTracking() {
         locationJob = viewModelScope.launch {
             locationService.getLocationUpdates().collect { location ->
                 locations.add(location)
+                val latLng = LatLng(location.latitude, location.longitude)
+                routePoints.add(latLng)
                 updateRunningStats()
             }
         }
@@ -137,12 +144,17 @@ class RunningViewModel(context: Context) : ViewModel() {
         val distance = locationService.calculateDistance(locations)
         val pace = locationService.calculatePace(distance, duration)
         val speed = if (locations.isNotEmpty()) locations.last().speed else 0f
+        val currentLocation = if (locations.isNotEmpty()) {
+            LatLng(locations.last().latitude, locations.last().longitude)
+        } else null
         
         _runningStats.value = _runningStats.value.copy(
             currentDistance = distance,
             currentDuration = duration,
             currentPace = pace,
-            currentSpeed = speed
+            currentSpeed = speed,
+            currentLocation = currentLocation,
+            currentRoute = routePoints.toList()
         )
     }
     

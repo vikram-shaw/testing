@@ -6,9 +6,11 @@ A modern Android running tracking application built with Jetpack Compose that tr
 
 ### Core Functionality
 - **Real-time GPS tracking** with live updates
+- **Interactive map display** showing running route in real-time
 - **Run controls**: Start, pause, resume, and stop functionality
 - **Live statistics**: Distance, duration, pace, and speed
-- **Run history**: View all your past running sessions
+- **Run history**: View all your past running sessions with route maps
+- **Detailed route view**: Full-screen map and comprehensive statistics
 - **Automatic calculations**: Calories burned, average pace, max speed
 
 ### UI/UX Features
@@ -43,7 +45,10 @@ app/src/main/java/com/example/rush/
 │   └── RunningViewModelFactory.kt    # ViewModel factory
 ├── ui/screens/
 │   ├── RunningScreen.kt              # Main tracking screen
-│   └── HistoryScreen.kt              # History display
+│   ├── HistoryScreen.kt              # History display
+│   └── RouteDetailScreen.kt          # Detailed route view
+├── ui/components/
+│   └── RunningMapView.kt             # Map components
 ├── utils/
 │   └── FormatUtils.kt                # Formatting utilities
 └── ui/theme/                         # Material Design theme
@@ -56,6 +61,7 @@ app/src/main/java/com/example/rush/
 - **Navigation Compose** - Screen navigation
 - **ViewModel & LiveData** - State management
 - **Location Services** - GPS tracking
+- **Google Maps Compose** - Interactive map display
 - **Material Design 3** - UI components
 - **Accompanist Permissions** - Permission handling
 
@@ -80,7 +86,13 @@ app/src/main/java/com/example/rush/
    ```properties
    sdk.dir=/path/to/android/sdk
    ```
-5. Build and run the app
+5. **Get a Google Maps API key**:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select existing one
+   - Enable Maps SDK for Android
+   - Create credentials (API Key)
+   - Replace `YOUR_API_KEY_HERE` in `AndroidManifest.xml` with your actual API key
+6. Build and run the app
 
 ### Usage
 1. **Grant location permission** when prompted
@@ -94,15 +106,23 @@ app/src/main/java/com/example/rush/
 
 ### Running Screen
 - Large time display as the main stat
+- **Interactive map** showing real-time route tracking
 - Distance, pace, speed, and status cards
 - Start/pause/stop floating action buttons
 - Permission request handling
 
 ### History Screen
 - List of all completed runs
+- **Compact map view** for each running session
 - Date, time, and duration for each session
 - Distance, pace, calories, and speed statistics
 - Empty state when no runs exist
+
+### Route Detail Screen
+- **Full-screen map view** with complete route
+- Detailed statistics and session information
+- Start/end markers and route polyline
+- Comprehensive running metrics
 
 ## Data Tracking
 
@@ -141,13 +161,15 @@ app/src/main/java/com/example/rush/
 ## Future Enhancements
 
 ### Potential Features
-- Route mapping with Google Maps
+- ✅ Route mapping with Google Maps (implemented)
 - Running goals and achievements
 - Social sharing capabilities
 - Workout plans and training programs
 - Heart rate monitoring integration
 - Weather information display
 - Audio coaching and feedback
+- Export routes to GPX/KML formats
+- Offline map support
 
 ### Technical Improvements
 - Local database for offline storage
@@ -170,4 +192,7 @@ This project is open source and available under the MIT License.
 
 ---
 
-**Note**: This app requires GPS/location services to function properly. Make sure to test on a physical device or emulator with location simulation enabled.
+**Important Notes**: 
+- This app requires GPS/location services to function properly. Make sure to test on a physical device or emulator with location simulation enabled.
+- **Google Maps API Key Required**: You need a valid Google Maps API key to use the map features. Replace `YOUR_API_KEY_HERE` in `AndroidManifest.xml` with your actual API key from Google Cloud Console.
+- Map features will not work without a valid API key.

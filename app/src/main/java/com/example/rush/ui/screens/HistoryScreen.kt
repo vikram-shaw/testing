@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.rush.data.RunningSession
 import com.example.rush.viewmodel.RunningViewModel
 import com.example.rush.utils.FormatUtils
+import com.example.rush.ui.components.CompactMapView
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -143,6 +144,17 @@ private fun RunningSessionCard(
             }
             
             Spacer(modifier = Modifier.height(12.dp))
+            
+            // Compact Map View
+            if (session.route.isNotEmpty()) {
+                CompactMapView(
+                    modifier = Modifier.fillMaxWidth(),
+                    route = session.route,
+                    height = 150
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+            }
             
             // Main stats
             Row(

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.rush.viewmodel.RunningViewModel
 import com.example.rush.utils.FormatUtils
+import com.example.rush.ui.components.RunningMapView
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -102,7 +103,20 @@ private fun RunningContent(
             color = MaterialTheme.colorScheme.primary
         )
         
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        // Map View
+        RunningMapView(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp),
+            route = runningStats.currentRoute,
+            currentLocation = runningStats.currentLocation,
+            isLiveTracking = runningStats.isRunning,
+            showUserLocation = true
+        )
+        
+        Spacer(modifier = Modifier.height(24.dp))
         
         // Stats Cards
         StatsSection(runningStats)
