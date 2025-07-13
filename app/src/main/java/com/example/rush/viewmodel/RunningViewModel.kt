@@ -2,6 +2,7 @@ package com.example.rush.viewmodel
 
 import android.content.Context
 import android.location.Location
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rush.data.RunningSession
@@ -107,11 +108,14 @@ class RunningViewModel(context: Context) : ViewModel() {
     }
     
     private fun startLocationTracking() {
+        Log.d("RunningViewModel", "Starting location tracking")
         locationJob = viewModelScope.launch {
             locationService.getLocationUpdates().collect { location ->
+                Log.d("RunningViewModel", "Received location: ${location.latitude}, ${location.longitude}")
                 locations.add(location)
                 val latLng = LatLng(location.latitude, location.longitude)
                 routePoints.add(latLng)
+                Log.d("RunningViewModel", "Route points count: ${routePoints.size}")
                 updateRunningStats()
             }
         }
@@ -147,6 +151,8 @@ class RunningViewModel(context: Context) : ViewModel() {
         val currentLocation = if (locations.isNotEmpty()) {
             LatLng(locations.last().latitude, locations.last().longitude)
         } else null
+        
+        Log.d("RunningViewModel", "Updating stats - Route points: ${routePoints.size}, Distance: $distance, Current location: $currentLocation")
         
         _runningStats.value = _runningStats.value.copy(
             currentDistance = distance,

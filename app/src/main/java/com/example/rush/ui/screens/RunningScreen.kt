@@ -1,5 +1,6 @@
 package com.example.rush.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -44,7 +45,10 @@ fun RunningScreen(
     
     LaunchedEffect(Unit) {
         if (!locationPermissionState.status.isGranted) {
+            Log.d("RunningScreen", "Location permission not granted, requesting...")
             locationPermissionState.launchPermissionRequest()
+        } else {
+            Log.d("RunningScreen", "Location permission already granted")
         }
     }
     
@@ -106,6 +110,10 @@ private fun RunningContent(
         Spacer(modifier = Modifier.height(32.dp))
         
         // Map View
+        LaunchedEffect(runningStats.currentRoute.size, runningStats.currentLocation) {
+            Log.d("RunningScreen", "Map data - Route points: ${runningStats.currentRoute.size}, Current location: ${runningStats.currentLocation}, Is running: ${runningStats.isRunning}")
+        }
+        
         RunningMapView(
             modifier = Modifier
                 .fillMaxWidth()
@@ -320,6 +328,15 @@ private fun PermissionContent(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
         
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = "Make sure to:\n• Enable location services in Settings\n• Allow \"Precise location\" if asked\n• Go outdoors for better GPS signal",
+            style = MaterialTheme.typography.bodySmall,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
+        
         Spacer(modifier = Modifier.height(24.dp))
         
         Button(
@@ -327,6 +344,19 @@ private fun PermissionContent(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Grant Permission")
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        OutlinedButton(
+            onClick = { 
+                // This will help debug location issues
+                Log.d("RunningScreen", "Opening device location settings")
+                // You can add intent to open location settings here
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Open Location Settings")
         }
     }
 }

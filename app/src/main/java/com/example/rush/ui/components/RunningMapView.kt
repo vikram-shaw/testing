@@ -1,5 +1,6 @@
 package com.example.rush.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -27,6 +28,11 @@ fun RunningMapView(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    
+    // Log what data we're receiving
+    LaunchedEffect(route.size, currentLocation, isLiveTracking) {
+        Log.d("RunningMapView", "Map data - Route size: ${route.size}, Current location: $currentLocation, Live tracking: $isLiveTracking")
+    }
     
     // Default camera position (fallback)
     val defaultPosition = LatLng(37.7749, -122.4194) // San Francisco
@@ -139,8 +145,41 @@ fun RunningMapView(
                             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
                         )
                     ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = if (isLiveTracking) "🛰️ Waiting for GPS..." else "📍 No route data",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            if (isLiveTracking) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Make sure location is enabled and you're outdoors",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                )
+                            }
+                        }
+                    }
+                }
+            } else if (route.isEmpty() && currentLocation != null) {
+                // Show current location only
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                        )
+                    ) {
                         Text(
-                            text = if (isLiveTracking) "Waiting for GPS..." else "No route data",
+                            text = "📍 Location found! Start running to track your route",
                             modifier = Modifier.padding(16.dp),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface

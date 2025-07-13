@@ -196,3 +196,34 @@ This project is open source and available under the MIT License.
 - This app requires GPS/location services to function properly. Make sure to test on a physical device or emulator with location simulation enabled.
 - **Google Maps API Key Required**: You need a valid Google Maps API key to use the map features. Replace `YOUR_API_KEY_HERE` in `AndroidManifest.xml` with your actual API key from Google Cloud Console.
 - Map features will not work without a valid API key.
+
+## Troubleshooting
+
+### "No route data" Message
+If you see "No route data" on the map, try these steps:
+
+1. **Check API Key**: Ensure you've replaced `YOUR_API_KEY_HERE` in `AndroidManifest.xml` with your actual Google Maps API key
+2. **Enable APIs**: In Google Cloud Console, make sure you've enabled:
+   - Maps SDK for Android
+   - Places API (if using autocomplete)
+3. **Location Permissions**: 
+   - Grant location permission when prompted
+   - Enable "Precise location" if available
+   - Check that location services are enabled in device settings
+4. **GPS Signal**: 
+   - Go outdoors for better GPS reception
+   - Wait a few seconds for GPS to initialize
+   - Try restarting the app if location isn't working
+
+### Debugging Logs
+Check Android Studio Logcat for these debug messages:
+- `LocationService`: Shows GPS permission and location updates
+- `RunningViewModel`: Shows route data processing
+- `RunningScreen`: Shows map data being passed to components
+- `RunningMapView`: Shows what data the map is receiving
+
+### Common Issues
+- **Emulator**: Use extended controls to set location in Android emulator
+- **Indoor testing**: GPS may not work well indoors - try near a window or outdoors
+- **API Key restrictions**: Make sure your API key isn't restricted to specific package names
+- **Rate limiting**: Check if you've exceeded Google Maps API quota
