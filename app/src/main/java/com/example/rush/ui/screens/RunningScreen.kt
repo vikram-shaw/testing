@@ -358,5 +358,20 @@ private fun PermissionContent(
         ) {
             Text("Open Location Settings")
         }
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        OutlinedButton(
+            onClick = {
+                Log.d("RunningScreen", "Opening map debug screen")
+                // TODO: Navigate to MapDebugScreen
+                // For now, this logs debug info
+                Log.d("MapDebug", "Package: com.example.rush")
+                Log.d("MapDebug", "Check API key in AndroidManifest.xml")
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Debug Map Setup")
+        }
     }
 }
