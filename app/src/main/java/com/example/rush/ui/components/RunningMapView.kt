@@ -1,6 +1,7 @@
 package com.example.rush.ui.components
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -11,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -28,10 +30,23 @@ fun RunningMapView(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    var mapLoaded by remember { mutableStateOf(false) }
+    var mapError by remember { mutableStateOf<String?>(null) }
+    var showFallback by remember { mutableStateOf(false) }
     
     // Log what data we're receiving
     LaunchedEffect(route.size, currentLocation, isLiveTracking) {
         Log.d("RunningMapView", "Map data - Route size: ${route.size}, Current location: $currentLocation, Live tracking: $isLiveTracking")
+    }
+    
+    // Check for Google Maps availability after a timeout
+    LaunchedEffect(Unit) {
+        Log.d("RunningMapView", "🚀 Initializing Google Maps...")
+        kotlinx.coroutines.delay(5000) // 5 second timeout
+        if (!mapLoaded && mapError == null) {
+            Log.w("RunningMapView", "⏰ Map loading timeout - switching to fallback")
+            showFallback = true
+        }
     }
     
     // Default camera position (fallback)
@@ -63,58 +78,112 @@ fun RunningMapView(
                 .fillMaxSize()
                 .clip(RoundedCornerShape(16.dp))
         ) {
-            GoogleMap(
-                modifier = Modifier.fillMaxSize(),
-                cameraPositionState = cameraPositionState,
-                properties = MapProperties(
-                    isMyLocationEnabled = showUserLocation && currentLocation != null,
-                    mapType = MapType.NORMAL
-                ),
-                uiSettings = MapUiSettings(
-                    zoomControlsEnabled = false,
-                    compassEnabled = true,
-                    myLocationButtonEnabled = false
+            if (showFallback || mapError != null) {
+                // Show fallback map view
+                Log.d("RunningMapView", "📱 Showing fallback map view")
+                FallbackMapView(
+                    modifier = Modifier.fillMaxSize(),
+                    route = route,
+                    currentLocation = currentLocation,
+                    isLiveTracking = isLiveTracking
                 )
-            ) {
-                // Draw the route as a polyline
-                if (route.isNotEmpty()) {
-                    Polyline(
-                        points = route,
-                        color = MaterialTheme.colorScheme.primary,
-                        width = 8f
-                    )
-                }
-                
-                // Add markers for start and end points
-                if (route.isNotEmpty()) {
-                    // Start marker
-                    Marker(
-                        state = MarkerState(position = route.first()),
-                        title = "Start",
-                        snippet = "Route started here"
-                    )
-                    
-                    // End marker (only if not live tracking)
-                    if (!isLiveTracking && route.size > 1) {
-                        Marker(
-                            state = MarkerState(position = route.last()),
-                            title = "End",
-                            snippet = "Route ended here"
-                        )
+            } else {
+                try {
+                    GoogleMap(
+                        modifier = Modifier.fillMaxSize(),
+                        cameraPositionState = cameraPositionState,
+                        properties = MapProperties(
+                            isMyLocationEnabled = showUserLocation && currentLocation != null,
+                            mapType = MapType.NORMAL
+                        ),
+                        uiSettings = MapUiSettings(
+                            zoomControlsEnabled = false,
+                            compassEnabled = true,
+                            myLocationButtonEnabled = false
+                        ),
+                                                 onMapLoaded = {
+                             Log.d("RunningMapView", "✅ Google Map loaded successfully")
+                             mapLoaded = true
+                             showFallback = false // Cancel fallback since map loaded
+                         }
+                    ) {
+                        // Draw the route as a polyline
+                        if (route.isNotEmpty()) {
+                            Polyline(
+                                points = route,
+                                color = MaterialTheme.colorScheme.primary,
+                                width = 8f
+                            )
+                        }
+                        
+                        // Add markers for start and end points
+                        if (route.isNotEmpty()) {
+                            // Start marker
+                            Marker(
+                                state = MarkerState(position = route.first()),
+                                title = "Start",
+                                snippet = "Route started here"
+                            )
+                            
+                            // End marker (only if not live tracking)
+                            if (!isLiveTracking && route.size > 1) {
+                                Marker(
+                                    state = MarkerState(position = route.last()),
+                                    title = "End",
+                                    snippet = "Route ended here"
+                                )
+                            }
+                        }
+                        
+                        // Current location marker for live tracking
+                        if (isLiveTracking && currentLocation != null) {
+                            Marker(
+                                state = MarkerState(position = currentLocation),
+                                title = "Current Location"
+                            )
+                        }
                     }
-                }
-                
-                // Current location marker for live tracking
-                if (isLiveTracking && currentLocation != null) {
-                    Marker(
-                        state = MarkerState(position = currentLocation),
-                        title = "Current Location"
-                    )
+                                 } catch (e: Exception) {
+                     Log.e("RunningMapView", "❌ Error loading Google Map: ${e.message}", e)
+                     mapError = "Failed to load map: ${e.message}"
+                     showFallback = true
+                 }
+            }
+            
+            // Loading indicator
+            if (!mapLoaded && mapError == null && !showFallback) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(32.dp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Loading map...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
                 }
             }
             
-            // Map controls overlay
-            if (isLiveTracking) {
+            // Map controls overlay (only show for Google Maps, not fallback)
+            if (isLiveTracking && mapLoaded && !showFallback && mapError == null) {
                 MapControls(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)

@@ -199,31 +199,64 @@ This project is open source and available under the MIT License.
 
 ## Troubleshooting
 
-### "No route data" Message
-If you see "No route data" on the map, try these steps:
+### Map Not Showing At All
+If the map area is blank or shows error messages:
 
-1. **Check API Key**: Ensure you've replaced `YOUR_API_KEY_HERE` in `AndroidManifest.xml` with your actual Google Maps API key
-2. **Enable APIs**: In Google Cloud Console, make sure you've enabled:
-   - Maps SDK for Android
-   - Places API (if using autocomplete)
-3. **Location Permissions**: 
+1. **🔑 API Key Issues**:
+   - Verify you've replaced `YOUR_API_KEY_HERE` with your actual API key
+   - Check the API key has no restrictions or is restricted to your package name
+   - Ensure the API key is valid and not expired
+
+2. **📱 Enable Required APIs**:
+   - Maps SDK for Android ✅
+   - Places API (optional) ✅
+
+3. **🚀 Fallback Map**:
+   - App automatically shows a fallback map if Google Maps fails
+   - Shows route visualization with basic graphics
+   - Warns about missing API key
+
+### "No route data" Message
+If you see "No route data" on the map:
+
+1. **📍 Location Setup**:
    - Grant location permission when prompted
-   - Enable "Precise location" if available
+   - Enable "Precise location" if available  
    - Check that location services are enabled in device settings
-4. **GPS Signal**: 
+
+2. **🛰️ GPS Signal**:
    - Go outdoors for better GPS reception
-   - Wait a few seconds for GPS to initialize
+   - Wait 10-30 seconds for GPS to initialize
    - Try restarting the app if location isn't working
+
+### Built-in Debug Tools
+The app includes helpful debugging features:
+
+- **🔧 Map Debug Screen**: Test Google Maps setup and API key
+- **📊 Status Indicators**: Shows what's working and what needs fixing
+- **🗺️ Map Comparison**: Side-by-side Google Maps vs Fallback
+- **📱 System Info**: Package name, permissions, and API key status
 
 ### Debugging Logs
 Check Android Studio Logcat for these debug messages:
-- `LocationService`: Shows GPS permission and location updates
-- `RunningViewModel`: Shows route data processing
-- `RunningScreen`: Shows map data being passed to components
-- `RunningMapView`: Shows what data the map is receiving
+- `🚀 RunningMapView`: Map initialization and loading status
+- `📍 LocationService`: GPS permission and location updates  
+- `📊 RunningViewModel`: Route data processing
+- `📱 RunningScreen`: Map data being passed to components
 
-### Common Issues
-- **Emulator**: Use extended controls to set location in Android emulator
-- **Indoor testing**: GPS may not work well indoors - try near a window or outdoors
-- **API Key restrictions**: Make sure your API key isn't restricted to specific package names
-- **Rate limiting**: Check if you've exceeded Google Maps API quota
+### Common Issues & Solutions
+
+**🔧 Development Issues**:
+- **Emulator**: Use extended controls → Location to simulate GPS
+- **Indoor testing**: GPS may not work well indoors - try near a window
+- **API quota**: Check if you've exceeded Google Maps API limits
+
+**⚙️ Production Issues**:
+- **Package restrictions**: API key restricted to wrong package name
+- **Play Store**: Signed APK may use different package signature
+- **Network**: Maps require internet connection to load tiles
+
+**📱 Device Issues**:
+- **Permissions**: Location permission denied or restricted
+- **GPS disabled**: Location services turned off in device settings
+- **Outdated Play Services**: Update Google Play Services app
