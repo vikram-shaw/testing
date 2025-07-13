@@ -41,10 +41,17 @@ fun RunningMapView(
     
     // Check for Google Maps availability after a timeout
     LaunchedEffect(Unit) {
-        Log.d("RunningMapView", "🚀 Initializing Google Maps...")
+        Log.d("🗺️ MAP_INIT", "🚀 Initializing Google Maps...")
+        Log.d("🗺️ MAP_INIT", "📍 Route points: ${route.size}")
+        Log.d("🗺️ MAP_INIT", "📍 Current location: $currentLocation")
         delay(5000) // 5 second timeout
         if (!mapLoaded) {
-            Log.w("RunningMapView", "⏰ Map loading timeout - switching to fallback")
+            Log.w("🗺️ MAP_TIMEOUT", "⏰ Map loading timeout - switching to fallback")
+            Log.w("🗺️ MAP_TIMEOUT", "💡 This usually means:")
+            Log.w("🗺️ MAP_TIMEOUT", "   1. API key restrictions are blocking the app")
+            Log.w("🗺️ MAP_TIMEOUT", "   2. Maps SDK for Android is not enabled")
+            Log.w("🗺️ MAP_TIMEOUT", "   3. Billing is not enabled in Google Cloud")
+            Log.w("🗺️ MAP_TIMEOUT", "   4. Network connectivity issues")
             showFallback = true
         }
     }
@@ -80,7 +87,9 @@ fun RunningMapView(
         ) {
             if (showFallback) {
                 // Show fallback map view
-                Log.d("RunningMapView", "📱 Showing fallback map view")
+                Log.d("🗺️ MAP_FALLBACK", "📱 Showing fallback map view")
+                Log.d("🗺️ MAP_FALLBACK", "🔧 Check Android Studio Logcat for Google Maps errors")
+                Log.d("🗺️ MAP_FALLBACK", "🔧 Look for MAP_DEBUG logs to verify API key setup")
                 FallbackMapView(
                     modifier = Modifier.fillMaxSize(),
                     route = route,
@@ -102,7 +111,8 @@ fun RunningMapView(
                         myLocationButtonEnabled = false
                     ),
                     onMapLoaded = {
-                        Log.d("RunningMapView", "✅ Google Map loaded successfully")
+                        Log.d("🗺️ MAP_SUCCESS", "✅ Google Map loaded successfully!")
+                        Log.d("🗺️ MAP_SUCCESS", "✅ API key is working correctly")
                         mapLoaded = true
                         showFallback = false // Cancel fallback since map loaded
                     }

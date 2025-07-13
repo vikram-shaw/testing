@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import android.content.pm.PackageManager
+import android.util.Log
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -30,10 +32,39 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // Debug Google Maps API key configuration
+        debugApiKeySetup()
+        
         setContent {
             RushTheme {
                 RushApp()
             }
+        }
+    }
+    
+    private fun debugApiKeySetup() {
+        try {
+            val appInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+            val apiKey = appInfo.metaData?.getString("com.google.android.geo.API_KEY")
+            
+            Log.d("🔧 MAP_DEBUG", "=== Google Maps API Debug ===")
+            Log.d("🔧 MAP_DEBUG", "Package Name: $packageName")
+            Log.d("🔧 MAP_DEBUG", "API Key Found: ${apiKey != null}")
+            Log.d("🔧 MAP_DEBUG", "API Key Valid: ${apiKey != null && apiKey != "YOUR_API_KEY_HERE"}")
+            Log.d("🔧 MAP_DEBUG", "API Key Preview: ${apiKey?.take(10)}...")
+            Log.d("🔧 MAP_DEBUG", "============================")
+            
+            if (apiKey == null) {
+                Log.e("🔧 MAP_DEBUG", "❌ API key not found in AndroidManifest.xml!")
+            } else if (apiKey == "YOUR_API_KEY_HERE") {
+                Log.e("🔧 MAP_DEBUG", "❌ API key placeholder not replaced!")
+            } else {
+                Log.i("🔧 MAP_DEBUG", "✅ API key configured correctly")
+            }
+            
+        } catch (e: Exception) {
+            Log.e("🔧 MAP_DEBUG", "❌ Error reading API key: ${e.message}")
         }
     }
 }
