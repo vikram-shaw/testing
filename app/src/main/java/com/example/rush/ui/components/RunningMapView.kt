@@ -4,12 +4,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -24,6 +26,7 @@ fun RunningMapView(
     showUserLocation: Boolean = true
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     
     // Default camera position (fallback)
     val defaultPosition = LatLng(37.7749, -122.4194) // San Francisco
@@ -112,10 +115,12 @@ fun RunningMapView(
                         .padding(16.dp),
                     onCenterClick = {
                         currentLocation?.let { location ->
-                            cameraPositionState.animate(
-                                update = CameraUpdateFactory.newLatLngZoom(location, 17f),
-                                durationMs = 500
-                            )
+                            scope.launch {
+                                cameraPositionState.animate(
+                                    update = CameraUpdateFactory.newLatLngZoom(location, 17f),
+                                    durationMs = 500
+                                )
+                            }
                         }
                     }
                 )
